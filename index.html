@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>My Tech Blog</title>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet">
+  <style>
+    * { box-sizing: border-box; font-family: 'Poppins', sans-serif; }
+    body, html { margin: 0; padding: 0; height: 100%; background: #f4f4f4; }
+
+    header {
+      background: linear-gradient(to right, #2b5876, #4e4376);
+      color: white;
+      padding: 20px;
+      text-align: center;
+    }
+
+    nav a {
+      color: #fff;
+      margin: 0 10px;
+      text-decoration: none;
+      font-weight: 600;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 20px auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 2px 12px rgba(0,0,0,0.1);
+    }
+
+    .hidden { display: none; }
+
+    input, select, textarea, button {
+      width: 100%;
+      padding: 10px;
+      margin: 10px 0;
+      border: 1px solid #ccc;
+      border-radius: 6px;
+    }
+
+    button {
+      background-color: #4e4376;
+      color: white;
+      border: none;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #2b5876;
+    }
+
+    .landing {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      flex-direction: column;
+      background: linear-gradient(to right, #8360c3, #2ebf91);
+      color: white;
+      text-align: center;
+    }
+
+    .landing h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
+    }
+
+    .blog-list {
+      margin-top: 30px;
+    }
+
+    .blog-item {
+      background: #f0f0f0;
+      padding: 10px;
+      border-left: 5px solid #4e4376;
+      margin-bottom: 10px;
+    }
+
+    @media (max-width: 600px) {
+      .landing h1 { font-size: 32px; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Landing Page -->
+  <div class="landing" id="landingPage">
+    <h1>✨ It's My Blog</h1>
+    <button onclick="startBlog()">Enter Blog</button>
+  </div>
+
+  <!-- Main Content -->
+  <div id="mainContent" class="hidden">
+    <header>
+      <h1>My Tech Blog</h1>
+      <nav>
+        <a href="#" onclick="showSection('login')">Login</a>
+        <a href="#" onclick="showSection('register')">Register</a>
+        <a href="#" onclick="showSection('publish')">Publish</a>
+      </nav>
+    </header>
+
+    <div class="container">
+      
+      <!-- Login -->
+      <div id="loginSection" class="hidden">
+        <h2>🔐 Login</h2>
+        <input type="text" id="loginUsername" placeholder="Username" required>
+        <input type="password" id="loginPassword" placeholder="Password" required>
+        <button onclick="login()">Login</button>
+      </div>
+
+      <!-- Register -->
+      <div id="registerSection" class="hidden">
+        <h2>📝 Register</h2>
+        <input type="text" id="regUsername" placeholder="Username" required>
+        <input type="password" id="regPassword" placeholder="Password" required>
+        <button onclick="register()">Register</button>
+      </div>
+
+      <!-- Publish Blog -->
+      <div id="publishSection" class="hidden">
+        <h2>🖊️ Publish Blog</h2>
+        <button onclick="toggleBlogForm()">Create New Blog</button>
+
+        <div id="blogForm" class="hidden">
+          <select id="categorySelect">
+            <option value="">--Select Category--</option>
+            <option value="web">Introduction to Web Development</option>
+            <option value="api">What is an API</option>
+            <option value="cloud">Cloud Computing Basics</option>
+            <option value="data">Data Science</option>
+            <option value="java">Java</option>
+          </select>
+
+          <textarea id="writeup" placeholder="Write your blog here..."></textarea>
+          <input type="file" id="pdfUpload" accept="application/pdf">
+          <button onclick="saveBlog()">Save Blog</button>
+        </div>
+
+        <div class="blog-list" id="blogList">
+          <h3>📚 Saved Blogs</h3>
+          <div id="blogsContainer"></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function startBlog() {
+      document.getElementById("landingPage").classList.add("hidden");
+      document.getElementById("mainContent").classList.remove("hidden");
+      showSection('login');
+    }
+
+    function showSection(section) {
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('registerSection').classList.add('hidden');
+      document.getElementById('publishSection').classList.add('hidden');
+      document.getElementById(section + 'Section').classList.remove('hidden');
+
+      if (section === 'publish') loadBlogs();
+    }
+
+    function toggleBlogForm() {
+      document.getElementById('blogForm').classList.toggle('hidden');
+    }
+
+    function register() {
+      const username = document.getElementById('regUsername').value;
+      const password = document.getElementById('regPassword').value;
+      localStorage.setItem('user', JSON.stringify({ username, password }));
+      alert("Registered successfully!");
+      showSection('login');
+    }
+
+    function login() {
+      const username = document.getElementById('loginUsername').value;
+      const password = document.getElementById('loginPassword').value;
+      const user = JSON.parse(localStorage.getItem('user'));
+      if (user && user.username === username && user.password === password) {
+        alert("Login successful!");
+        showSection('publish');
+      } else {
+        alert("Invalid credentials!");
+      }
+    }
+
+    function saveBlog() {
+      const category = document.getElementById('categorySelect').value;
+      const writeup = document.getElementById('writeup').value;
+      const file = document.getElementById('pdfUpload').files[0];
+      const blogData = {
+        category,
+        writeup,
+        fileName: file ? file.name : null
+      };
+      const saved = JSON.parse(localStorage.getItem("blogs")) || [];
+      saved.push(blogData);
+      localStorage.setItem("blogs", JSON.stringify(saved));
+      alert("Blog saved!");
+      document.getElementById('blogForm').reset();
+      toggleBlogForm();
+      loadBlogs();
+    }
+
+    function loadBlogs() {
+      const blogs = JSON.parse(localStorage.getItem("blogs")) || [];
+      const container = document.getElementById('blogsContainer');
+      container.innerHTML = "";
+      blogs.forEach((blog, index) => {
+        const div = document.createElement('div');
+        div.className = "blog-item";
+        div.innerHTML = `
+          <strong>#${index + 1} - ${blog.category}</strong><br>
+          <p>${blog.writeup}</p>
+          ${blog.fileName ? `<em>PDF: ${blog.fileName}</em>` : ''}
+        `;
+        container.appendChild(div);
+      });
+    }
+  </script>
+</body>
+</html>
